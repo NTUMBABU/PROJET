@@ -1,8 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
-#include<sys/types.h>
-#include<sys/socket.h>
+#include<string.h>			// les librerie qui contienent les 
+#include<sys/types.h>		// fonctionnalite pour pouvoir fair
+#include<sys/socket.h>		// la connection entre deux machine
 #include<netinet/in.h>
 #include<netdb.h>
 #include<arpa/inet.h>
@@ -16,24 +16,22 @@ typedef struct User
 
 int main(void)
 {
-	pthread_t clientThread;
-	int socketServer = socket(AF_INET, SOCK_STREAM, 0);
-	struct sockaddr_in addrServer;
-	addrServer.sin_addr.s_addr = inet_addr("127.0.0.1");
+	int socketServer = socket(AF_INET, SOCK_STREAM, 0); // les socket qui permetront la liason 
+	struct sockaddr_in addrServer;						// entre deux programme.
+	addrServer.sin_addr.s_addr = inet_addr("127.0.0.1"); // l'addrese local de la machine
 	addrServer.sin_family = AF_INET;
-	addrServer.sin_port = htons(2020);
+	addrServer.sin_port = htons(2020); // la reservation ou l'ouvture d'un port pour pouvoir se
+										//se connecte a une machine(elle est un peu comme un recepteur des donnees.)
+	bind(socketServer, (const struct sockaddr *)&addrServer, sizeof(addrServer)); // connection au serveur
 
-	bind(socketServer, (const struct sockaddr *)&addrServer, sizeof(addrServer));
-	//printf("bind : %d\n", socketServer);
-
-	listen(socketServer, 1);
+	listen(socketServer, 1);// ici le serveur va etre en attente d'une connection
 	printf("En attente d'une liaison .....\n");
 
 	struct sockaddr_in addrClient;
 	socklen_t csize = sizeof(addrClient);
-	int socketClient = accept(socketServer, (struct sockaddr *) &addrClient, &csize);
+	int socketClient = accept(socketServer, (struct sockaddr *) &addrClient, &csize);// ici le serveur a accepte la liaison avec l'autre machine
 	printf("Connecte\n");
-	//printf("Client : %d\n", socketClient);
+	
 	int *argument = malloc(sizeof(int));
 	*argument = socketClient;
 	
@@ -43,8 +41,8 @@ int main(void)
 
 	send(socketClient, &user, sizeof(user), 0);
 
-	close(socketClient);
-	close(socketServer);
+	close(socketClient);// fermeture du socket .
+	close(socketServer);// feremeture du serveur.
 	printf("Fin du processus\n");
 
 	return 0;
