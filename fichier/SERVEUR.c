@@ -1,49 +1,98 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>			// les librerie qui contienent les 
-#include<sys/types.h>		// fonctionnalite pour pouvoir fair
-#include<sys/socket.h>		// la connection entre deux machine
+#include<string.h>
+#include<sys/types.h>
+#include<sys/socket.h>
 #include<netinet/in.h>
 #include<netdb.h>
 #include<arpa/inet.h>
 #include<unistd.h>
+#include<ctype.h>
 
-
-typedef struct User
+void error(const char *msg)
 {
-	char nom[51];
-}User;
+	perror(msg);
+	exit(1);
+}
 
-int main(void)
+
+int main(int argc, char *argv[])
 {
-	int socketServer = socket(AF_INET, SOCK_STREAM, 0); // les socket qui permetront la liason 
-	struct sockaddr_in addrServer;						// entre deux programme.
-	addrServer.sin_addr.s_addr = inet_addr("127.0.0.1"); // l'addrese local de la machine
-	addrServer.sin_family = AF_INET;
-	addrServer.sin_port = htons(2020); // la reservation ou l'ouvture d'un port pour pouvoir se
-										//se connecte a une machine(elle est un peu comme un recepteur des donnees.)
-	bind(socketServer, (const struct sockaddr *)&addrServer, sizeof(addrServer)); // connection au serveur
-
-	listen(socketServer, 1);// ici le serveur va etre en attente d'une connection
-	printf("En attente d'une liaison .....\n");
-
-	struct sockaddr_in addrClient;
-	socklen_t csize = sizeof(addrClient);
-	int socketClient = accept(socketServer, (struct sockaddr *) &addrClient, &csize);// ici le serveur a accepte la liaison avec l'autre machine
-	printf("Connecte\n");
+	if(argc < 2)
+	{
+		fprintf(stderr, "port No provided progam termined \n");
+		exit(1);
+	}
 	
-	int *argument = malloc(sizeof(int));
-	*argument = socketClient;
+	int sockfd , newsockfd , portno , n;
+	char buffer[255];
 	
-	User user = {
-		.nom = "salut! NTUMBABU TSHITEYA Joas",
-	};
-
-	send(socketClient, &user, sizeof(user), 0);
-
-	close(socketClient);// fermeture du socket .
-	close(socketServer);// feremeture du serveur.
-	printf("Fin du processus\n");
-
+	struct sockaddr_in serv_addr , cli_addr;
+	socklen_t clilen;
+	
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(sockfd < 0)
+	{
+		error("Echec de l'ouverture du Socket ");
+	}
+	bzero((char *) &serv_addr , sizeof(serv_addr));
+	portno = atoi(argv[1]);
+	
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(portno);
+	
+	if(bind(sockfd , (struct sockaddr *)&serv_addr , sizeof(serv_addr)) < 0)
+		error("Bind FAiled.");
+	listen(sockfd , 5);
+	clilen = sizeof(cli_addr);
+	
+	newsockfd = accept(sockfd , (struct sockaddr *) &cli_addr, &clilen);
+	
+	if(newsockfd < 0)
+	error("Erreur lors de la connexion");
+	//////////////////////////////////
+	/*Si vous souaite avoir une conversation intane avec le client 
+		il vous faut mettre en commentaire  la ligne 58 jusqu a la ligne
+		 72 puis enleve le commentaire qui se trouve a ligne 74 jusqu a la ligne 93 fait de mm pour le serveur*/
+	FILE *fp;
+	
+	int ch = 0;
+	fp = fopen("test_recu.txt" , "a");
+	int words;
+	
+	read(newsockfd , &words , sizeof(int));
+	
+	while(ch != words)
+	{
+		read(newsockfd , buffer , 255);
+		fprintf(fp , "%s " , buffer);
+		ch++;
+	}
+	printf("Les fichier est recu avec succes \n\n");
+	//////////////////////////////////////
+	/*
+	while(1)
+	{
+		bzero(buffer , 256);
+		n = read(newsockfd , buffer ,255);
+		if(n < 0)
+			error("Error on reading "); 
+		printf("Client : %s\n", buffer);
+		bzero(buffer, 255);
+		fgets(buffer , 255, stdin);
+		
+		n= write(newsockfd, buffer, strlen(buffer));
+		if(n < 0)
+			error("Error on writing ");
+			
+		int i = strncmp("Bye",buffer, 3);
+		if(i == 0)
+		break;
+	}
+	*/
+	close(newsockfd);
+	close(sockfd);
 	return 0;
+	
 }

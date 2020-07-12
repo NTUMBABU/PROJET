@@ -7,27 +7,95 @@
 #include<netdb.h>
 #include<arpa/inet.h>
 #include<unistd.h>
+#include<ctype.h>
 
-typedef struct User
+void error(const char *msg)
 {
-	char nom[50];
-}User;
-
-int main(void)
+	perror(msg);
+	exit(0);
+}
+int main(int argc, char *argv[])
 {
-	int socketClient = socket(AF_INET, SOCK_STREAM, 0);// creation d'un socket client pareille que celluis de serveur
-	struct sockaddr_in addrClient;
-	addrClient.sin_addr.s_addr = inet_addr("127.0.0.1");// adreeer du deveur
-	addrClient.sin_family = AF_INET;
-	addrClient.sin_port = htons(2020);// la connection au port
-	connect(socketClient, (const struct sockaddr *)&addrClient, sizeof(addrClient));//connection client a l'adresse addrClient;
-	printf("connecte\n");
-
-	User user;
-	recv(socketClient, &user, sizeof(User), 0);
-	printf("%s \n",user.nom);
+	int sockfd, portno, n;
+	struct sockaddr_in serv_addr;
+	struct hostent *server;
 	
-	close(socketClient);
-
-	return 0;
+	char buffer[255];
+	if(argc < 3)
+	{
+		fprintf(stderr, "usage %s hostname port \n", argv[0]);
+		exit(0);
+	}
+	
+	portno = atoi(argv[2]);
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(sockfd < 0)
+		error("erreur de l'ouverture du socket");
+		
+		server = gethostbyname(argv[1]);
+		if(server == NULL)
+		{
+		fprintf(stderr, "Error, no such host");
+		
+}
+		bzero((char *) &serv_addr, sizeof(serv_addr));
+		serv_addr.sin_family = AF_INET;
+		bcopy((char *) server ->h_addr, (char *) &serv_addr.sin_addr.s_addr, server->h_length);
+		serv_addr.sin_port = htons(portno);
+		if(connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))<0)
+			error("connection echoue");
+		////////////////////////////////////
+		/*Si vous souaite avoir une conversation intane avec le serveur 
+		il vous faut mettre en commentaire  la ligne 51 jusqu a la ligne
+		 74 puis enleve le commentaire qui se trouve a ligne 76 jusqu a la ligne 96 fait de mm pour le serveur*/
+		FILE *f;
+		int words = 0;
+		
+		char c;
+		
+		f = fopen("test.txt", "r");
+		while((c = getc(f)) != EOF)
+		{
+			fscanf(f , "%s" , buffer);
+			if(isspace(c) || c =='\t')
+			words++;
+		}
+		
+		write(sockfd , &words , sizeof(int));
+		rewind(f);
+		
+		char ch;
+		while(ch != EOF)
+		{
+			fscanf(f , "%s" , buffer);
+			write(sockfd , buffer , 255);
+			ch = fgetc(f);
+		}
+		printf("Le fihier est arrive avec succes \n\n");
+		////////////////////////////////////////////
+		/*	
+		while(1)
+		{
+			bzero(buffer, 255);
+			fgets(buffer, 255 , stdin);
+			n = write(sockfd, buffer , strlen(buffer));
+			if(n < 0)
+				error("Eroor on writing");
+				
+			bzero(buffer, 255);
+			n = read(sockfd, buffer, 255);
+			if(n < 0)
+				error("Error on reading");
+				
+			printf("Server : %s", buffer);
+			
+			int i = strncmp("Bye", buffer, 3);
+			if(i == 0)
+			break;
+		}
+		*/
+		
+		close(sockfd);
+		return 0;
+		
 }
