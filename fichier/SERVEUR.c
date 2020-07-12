@@ -1,9 +1,9 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-#include<sys/types.h>
-#include<sys/socket.h>
-#include<netinet/in.h>
+#include<sys/types.h>			// les librerie qui contienent les
+#include<sys/socket.h>			// fonctionnalite pour pouvoir fair
+#include<netinet/in.h>			// la connection entre les client et le serveur
 #include<netdb.h>
 #include<arpa/inet.h>
 #include<unistd.h>
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 		break;
 	}
 	*/
-	close(newsockfd);
+	close(newsockfd); //fermeture du socket
 	close(sockfd);
 	return 0;
 	

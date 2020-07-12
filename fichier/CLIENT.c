@@ -1,7 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
-#include<sys/types.h>
+#include<string.h>			// les librerie qui contienent les 
+#include<sys/types.h>		// fonctionnalite pour pouvoir fair
+#include<sys/socket.h>		// la connection entre les client et le serveur
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<netdb.h>
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 	}
 	
 	portno = atoi(argv[2]);
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	sockfd = socket(AF_INET, SOCK_STREAM, 0);// creation du soket
 	if(sockfd < 0)
 		error("erreur de l'ouverture du socket");
 		
@@ -46,8 +47,8 @@ int main(int argc, char *argv[])
 			error("connection echoue");
 		////////////////////////////////////
 		/*Si vous souaite avoir une conversation intane avec le serveur 
-		il vous faut mettre en commentaire  la ligne 51 jusqu a la ligne
-		 74 puis enleve le commentaire qui se trouve a ligne 76 jusqu a la ligne 96 fait de mm pour le serveur*/
+		il vous faut mettre en commentaire  la ligne 52 jusqu a la ligne
+		 74 puis enleve le commentaire qui se trouve a ligne 78 jusqu a la ligne 98 fait de mm pour le serveur*/
 		FILE *f;
 		int words = 0;
 		
@@ -73,6 +74,7 @@ int main(int argc, char *argv[])
 		}
 		printf("Le fihier est arrive avec succes \n\n");
 		////////////////////////////////////////////
+		//lancement de la convertion instantene avec la boucle while
 		/*	
 		while(1)
 		{
